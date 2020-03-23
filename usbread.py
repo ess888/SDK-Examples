@@ -95,5 +95,4 @@ def animate(l):
 #        	print(l)
 
 ani = animation.FuncAnimation(fig, animate, fargs=(), interval=100)
-
 plt.show()
