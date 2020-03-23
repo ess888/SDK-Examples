@@ -4,6 +4,8 @@
 #
 # There is a lot of data. For speed reason we skip some of the data see reset
 #
+# VERSION:mvk-23032020-10:57
+#
 import serial, string
 #from serial import serial
 import numpy as np
@@ -11,6 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
+import sys
 vegetables = ["R7","R6","R5","R4","R3","R2","R1", "R0"]
 farmers    = ["C0", "C1","C2","C3","C4","C5","C6","C7"]
 
@@ -24,11 +27,11 @@ harvest = np.array([
                      [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]
 ])
 
-
-mydata = "300.0,5.0,5.0,4.0,3.0,9.0,5.0,3.0,4.0,4.0,3.0,1.0,9.0,5.0,2.0,6.0,4.0,5.0,3.0,1.0,13.0,4.0,1.0,5.0,3.0,4.0,3.0,1.0,11.0,4.0,1.0,7.0,4.0,5.0,3.0,2.0,12.0,4.0,2.0,5.0,4.0,5.0,3.0,1.0,10.0,3.0,1.0,6.0,4.0,5.0,3.0,1.0,9.0,3.0,1.0,6.0,4.0,4.0,3.0,1.0,10.0,3.0,1.0,000"
+#100 bottom left
+mydata = "100.0,5.0,5.0,4.0,3.0,9.0,5.0,200.0,210.0,4.0,3.0,1.0,9.0,5.0,2.0,6.0,4.0,5.0,3.0,1.0,10.0,4.0,1.0,5.0,3.0,4.0,3.0,1.0,11.0,4.0,1.0,7.0,4.0,5.0,3.0,2.0,12.0,4.0,2.0,5.0,4.0,5.0,3.0,1.0,10.0,3.0,1.0,6.0,4.0,5.0,3.0,1.0,9.0,3.0,1.0,6.0,290.0,4.0,3.0,1.0,10.0,3.0,1.0,400"
 
 harvest1 = mydata.split(",")
-harvest = np.array([harvest1[0:8],harvest1[8:16],harvest1[16:24],harvest1[24:32],harvest1[32:40],harvest1[40:48],harvest1[48:56],harvest1[56:64]],dtype=np.float32)
+harvest = np.array([harvest1[56:64],harvest1[48:56],harvest1[40:48],harvest1[32:40],harvest1[24:32],harvest1[16:24],harvest1[8:16],harvest1[0:8]],dtype=np.float32)
 print(harvest)
 fig, ax = plt.subplots()
 #legend = plt.legend()
@@ -69,30 +72,50 @@ ser = serial.Serial('/dev/tty.ST1-MVK-05-DevB', 115200, 8, 'N', 1)
 
 cbar = fig.colorbar(ax=ax, mappable=im, orientation='horizontal')
 cbar.set_label('Pressure, $^\circ\mathrm{V}$')
-
+f= open("fabfabric-5.csv","w+")
+ser.reset_input_buffer()
 
 def animate(l):
-    output = ser.readline()
-    output = output.decode("utf-8")
-    print(output)
-    ser.reset_input_buffer()
-    if len(output) > 100:
-#        output = output.decode("utf-8")
-#        output = output.strip(',#\r\n')
-        harvest1 = output.split(",")
-        harvest = np.array([harvest1[0:8],harvest1[8:16],harvest1[16:24],harvest1[24:32],harvest1[32:40],harvest1[40:48],harvest1[48:56],harvest1[56:64]],dtype=np.float32)
-        #	im = ax.imshow(harvest)
-        #	print (harvest)
+    try:
+        output = ser.readline()
+        output = output.decode("utf-8")
+        #print(output)
+        #f.write(output)
+        ser.reset_input_buffer()
+        if (l == 1 ):
+            output=mydata;
+        # output=mydata;
+        if len(output) > 150:
+    #        output = output.decode("utf-8")
+    #        output = output.strip(',#\r\n')
+            print(output)
+            harvest1 = output.split(",")
+            harvest = np.array([harvest1[56:64],harvest1[48:56],harvest1[40:48],harvest1[32:40],harvest1[24:32],harvest1[16:24],harvest1[8:16],harvest1[0:8]],dtype=np.float32)
+        #    harvest = np.array([harvest1[0:8],harvest1[8:16],harvest1[16:24],harvest1[24:32],harvest1[32:40],harvest1[40:48],harvest1[48:56],harvest1[56:64]],dtype=np.float32)
+            #	im = ax.imshow(harvest)
+            print (harvest)
 
-#        harvest[0][0]=l
-        im = ax.imshow(harvest)
-# Loop over data dimensions and create text annotations.
-        for i in range(len(vegetables)):
-            for j in range(len(farmers)):
-                text = ax.text(j, i, "" ,ha="center", va="center", color="w")
-                text.remove()
-#
-#        	print(l)
+    #        harvest[0][0]=l
+            im = ax.imshow(harvest)
+    # Loop over data dimensions and create text annotations.
+            for i in range(len(vegetables)):
+                for j in range(len(farmers)):
+                    text = ax.text(j, i, "" ,ha="center", va="center", color="w")
+                    text.remove()
+    #
+    #        	print(l)
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+#    finally:
+#        print("")
 
+#        f.close()
 ani = animation.FuncAnimation(fig, animate, fargs=(), interval=100)
+
 plt.show()
+
+#while (True):#
+#        output = ser.readline()
+#        output = output.decode("utf-8")
+#        print (output)
+#        f.write(output)
