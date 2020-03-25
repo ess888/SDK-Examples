@@ -1,1 +1,1 @@
-This will read the serial data and display on a webpage see public folder
+This will read the serial data and display on a webpage with a heatmap see public folder
